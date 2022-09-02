@@ -1,0 +1,534 @@
+#鸢尾花数据集
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[4]:
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import DBSCAN
+
+
+# In[71]:
+
+
+x = np.vstack((X_reduced[:, 0],X_reduced[:, 1]))
+x = x.transpose()
+x
+
+
+# In[86]:
+
+
+y_pred = DBSCAN(eps = 1).fit_predict(x)
+plt.scatter(X_reduced[:, 0],X_reduced[:, 1],c=y_pred)
+plt.show()
+
+
+# In[73]:
+
+
+from sklearn import datasets
+Iris_df = datasets.load_iris()
+lris_df = datasets.load_iris() 
+from sklearn.decomposition import PCA
+import numpy as np
+import matplotlib.pyplot as plt
+plt.scatter(X_reduced[:, 0], X_reduced[:, 1], c=lris_df.target)
+plt.show()
+
+
+# In[74]:
+
+
+from sklearn import datasets
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans 
+
+lris_df = datasets.load_iris() 
+#挑选出前两个维度作为x轴和y轴，你也可以选择其他维度
+
+X_reduced = PCA(n_components=2).fit_transform(iris.data)
+#这里已经知道了分3类，其他分类这里的参数需要调试
+model = KMeans(n_clusters=3) 
+#训练模型
+model.fit(lris_df.data) 
+#选取行标为100的那条数据，进行预测
+prddicted_label= model.predict([[6.3, 3.3, 6, 2.5]]) 
+#预测全部150条数据
+all_predictions = model.predict(lris_df.data) 
+#打印出来对150条数据的聚类散点图
+plt.scatter(X_reduced[:, 0], X_reduced[:, 1], c=all_predictions)
+plt.show()
+
+
+# In[75]:
+
+
+model2 = KMeans(n_clusters=3,init='kmedoids(PAM,Partitioning Around Medoids)') 
+model.fit(lris_df.data) 
+#选取行标为100的那条数据，进行预测
+prddicted_label= model.predict([[6.3, 3.3, 6, 2.5]]) 
+#预测全部150条数据
+all_predictions = model.predict(lris_df.data) 
+#打印出来对150条数据的聚类散点图
+plt.scatter(X_reduced[:, 0], X_reduced[:, 1], c=all_predictions)
+plt.show()
+
+
+# In[76]:
+
+
+import numpy as np
+
+def FCM(X, c_clusters=3, m=2, eps=10):
+    membership_mat = np.random.random((len(X), c_clusters))
+    membership_mat = np.divide(membership_mat, np.sum(membership_mat, axis=1)[:, np.newaxis])
+
+    while True:
+        working_membership_mat = membership_mat ** m
+        Centroids = np.divide(np.dot(working_membership_mat.T, X), np.sum(working_membership_mat.T, axis=1)[:, np.newaxis])
+        
+        n_c_distance_mat = np.zeros((len(X), c_clusters))
+        for i, x in enumerate(X):
+            for j, c in enumerate(Centroids):
+                n_c_distance_mat[i][j] = np.linalg.norm(x-c, 2)
+        
+        new_membership_mat = np.zeros((len(X), c_clusters))
+        
+        for i, x in enumerate(X):
+            for j, c in enumerate(Centroids):
+                new_membership_mat[i][j] = 1. / np.sum((n_c_distance_mat[i][j] / n_c_distance_mat[i]) ** (2 / (m - 1)))
+        if np.sum(abs(new_membership_mat - membership_mat)) < eps:
+            break
+        membership_mat =  new_membership_mat
+    return np.argmax(new_membership_mat, axis=1)
+
+
+# In[77]:
+
+
+from sklearn import datasets
+
+iris = datasets.load_iris()
+
+
+# In[78]:
+
+
+def evaluate(y, t):
+    a, b, c, d = [0 for i in range(4)]
+    for i in range(len(y)):
+        for j in range(i+1, len(y)):
+            if y[i] == y[j] and t[i] == t[j]:
+                a += 1
+            elif y[i] == y[j] and t[i] != t[j]:
+                b += 1
+            elif y[i] != y[j] and t[i] == t[j]:
+                c += 1
+            elif y[i] != y[j] and t[i] != t[j]:
+                d += 1
+    return a, b, c, d
+
+def external_index(a, b, c, d, m):
+    JC = a / (a + b + c)
+    FMI = np.sqrt(a**2 / ((a + b) * (a + c)))
+    RI = 2 * ( a + d ) / ( m * (m + 1) )
+    return JC, FMI, RI
+
+def evaluate_it(y, t):
+    a, b, c, d = evaluate(y, t)
+    return external_index(a, b, c, d, len(y))
+
+
+# In[79]:
+
+
+test_y = FCM(iris.data)
+
+
+# In[80]:
+
+
+evaluate_it(iris.target, test_y)
+
+
+# In[81]:
+
+
+
+plt.scatter(X_reduced[:, 0], X_reduced[:, 1], c=test_y, cmap=plt.cm.Set1)
+
+
+# In[110]:
+
+
+from sklearn.mixture import GaussianMixture as GMM
+gmm = GMM(n_components=3).fit(x)
+labels = gmm.predict(x)
+plt.scatter(X_reduced[:, 0], X_reduced[:, 1],c=labels, s=40, cmap='viridis');
+
+probs = gmm.predict_proba(x)
+print(probs[101:110].round(2))
+
+#人工数据集
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import datasets
+import pandas as pd
+
+gauss=pd.read_csv("gaussdata.csv")
+gauss=gauss[['x','y']]
+plt.scatter(gauss['x'], gauss['y'], marker='o')
+plt.show()
+
+heart=pd.read_csv("heart.csv",sep=' ')
+plt.scatter(heart['x'], heart['y'], marker='o')
+plt.show()
+
+
+# In[2]:
+
+
+from sklearn.cluster import DBSCAN
+y1_db = DBSCAN(eps = 0.33, min_samples = 10).fit_predict(gauss)
+plt.scatter(gauss['x'], gauss['y'], c=y1_db)
+plt.show()
+
+y2_db = DBSCAN(eps = 2, min_samples = 10).fit_predict(heart)
+plt.scatter(heart['x'], heart['y'], c=y2_db)
+plt.show()
+
+
+# In[3]:
+
+
+from sklearn.cluster import KMeans
+y1_km = KMeans(n_clusters=3).fit_predict(gauss)
+plt.scatter(gauss['x'], gauss['y'], c=y1_km)
+plt.show()
+
+y2_km=KMeans(n_clusters=2).fit_predict(heart)
+plt.scatter(heart['x'], heart['y'], c=y2_km)
+plt.show()
+
+
+# In[4]:
+
+
+#heart['z']=np.append(np.zeros(1000),np.ones(2000))
+#gauss_x=gauss[['x','y']]
+#gauss_y=gauss['z']
+
+
+# In[5]:
+
+
+from sklearn.mixture import GaussianMixture
+gmm=GaussianMixture(n_components=3)
+gmm.fit(gauss)
+y1_gmm = gmm.predict(gauss)
+plt.scatter(gauss['x'], gauss['y'], c=y1_gmm)
+plt.show()
+
+gmm2=GaussianMixture(n_components=2)
+gmm2.fit(heart)
+y2_gmm=gmm2.predict(heart)
+plt.scatter(heart['x'], heart['y'], c=y2_gmm)
+plt.show()
+
+
+# In[12]:
+
+
+from pyclust import KMedoids
+y1_kmedoids=KMedoids(n_clusters=3).fit_predict(np.array(gauss[['x','y']]))
+plt.scatter(gauss['x'], gauss['y'], c=y1_kmedoids)
+plt.show()
+
+y2_kmedoids=KMedoids(n_clusters=2).fit_predict(np.array(heart))
+plt.scatter(heart['x'], heart['y'], c=y2_kmedoids)
+plt.show()
+
+
+# In[13]:
+
+
+from pyclust import BisectKMeans
+y1_bkm=BisectKMeans(n_clusters=3).fit_predict(np.array(gauss[['x','y']]))
+plt.scatter(gauss['x'], gauss['y'], c=y1_bkm)
+plt.show()
+
+y2_bkm=BisectKMeans(n_clusters=2).fit_predict(np.array(heart))
+plt.scatter(heart['x'], heart['y'], c=y2_bkm)
+plt.show()
+
+
+# In[50]:
+
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import copy
+import math
+import random
+import time
+ 
+global MAX # 用于初始化隶属度矩阵U
+MAX = 10000.0
+ 
+global Epsilon  # 结束条件
+Epsilon = 0.0000001
+ 
+def print_matrix(list):
+	""" 
+	以可重复的方式打印矩阵
+	"""
+	for i in range(0, len(list)):
+		print (list[i])
+ 
+def initialize_U(data, cluster_number):
+	"""
+	这个函数是隶属度矩阵U的每行加起来都为1. 此处需要一个全局变量MAX.
+	"""
+	global MAX
+	U = []
+	for i in range(0, len(data)):
+		current = []
+		rand_sum = 0.0
+		for j in range(0, cluster_number):
+			dummy = random.randint(1,int(MAX))
+			current.append(dummy)
+			rand_sum += dummy
+		for j in range(0, cluster_number):
+			current[j] = current[j] / rand_sum
+		U.append(current)
+	return U
+ 
+def distance(point, center):
+
+	if len(point) != len(center):
+		return -1
+	dummy = 0.0
+	for i in range(0, len(point)):
+		dummy += abs(point[i] - center[i]) ** 2
+	return math.sqrt(dummy)
+ 
+def end_conditon(U, U_old):
+    """
+	结束条件。当U矩阵随着连续迭代停止变化时，触发结束
+	"""
+    global Epsilon
+    for i in range(0, len(U)):
+	    for j in range(0, len(U[0])):
+		    if abs(U[i][j] - U_old[i][j]) > Epsilon :
+			    return False
+    return True
+ 
+def normalise_U(U):
+	"""
+	在聚类结束时使U模糊化。每个样本的隶属度最大的为1，其余为0
+	"""
+	for i in range(0, len(U)):
+		maximum = max(U[i])
+		for j in range(0, len(U[0])):
+			if U[i][j] != maximum:
+				U[i][j] = 0
+			else:
+				U[i][j] = 1
+	return U
+ 
+ 
+def fuzzy(data, cluster_number, m):
+	# 初始化隶属度矩阵U
+	U = initialize_U(data, cluster_number)
+	# print_matrix(U)
+	# 循环更新U
+	while (True):
+		# 创建它的副本，以检查结束条件
+		U_old = copy.deepcopy(U)
+		# 计算聚类中心
+		C = []
+		for j in range(0, cluster_number):
+			current_cluster_center = []
+			for i in range(0, len(data[0])):
+				dummy_sum_num = 0.0
+				dummy_sum_dum = 0.0
+				for k in range(0, len(data)):
+    				# 分子
+					dummy_sum_num += (U[k][j] ** m) * data[k][i]
+					# 分母
+					dummy_sum_dum += (U[k][j] ** m)
+				# 第i列的聚类中心
+				current_cluster_center.append(dummy_sum_num/dummy_sum_dum)
+            # 第j簇的所有聚类中心
+			C.append(current_cluster_center)
+ 
+		# 创建一个距离向量, 用于计算U矩阵。
+		distance_matrix =[]
+		for i in range(0, len(data)):
+			current = []
+			for j in range(0, cluster_number):
+				current.append(distance(data[i], C[j]))
+			distance_matrix.append(current)
+ 
+		# 更新U
+		for j in range(0, cluster_number):	
+			for i in range(0, len(data)):
+				dummy = 0.0
+				for k in range(0, cluster_number):
+    				# 分母
+					dummy += (distance_matrix[i][j ] / distance_matrix[i][k]) ** (2/(m-1))
+				U[i][j] = 1 / dummy
+ 
+		if end_conditon(U, U_old):
+			#print ("已完成聚类")
+			break
+ 
+	U = normalise_U(U)
+	return U 
+
+def de_randomise_data(data,order):
+    new_data=[[] for i in range(0,len(data))]
+    for index in range(0,len(order)):
+        new_data[order[index]]=data[index]
+        print(data[index])
+        return new_data
+    
+if __name__ == '__main__':
+	data= np.array(gauss[['x','y']])
+	# 调用模糊C均值函数
+	res_U = fuzzy(data , 3 , 2)
+	y1_fckm=np.zeros(1500)
+	for i in range(0,1500):
+		y1_fckm[i]=np.argmax(res_U[i])
+	# 计算准确率
+	plt.scatter(gauss['x'], gauss['y'], c=y1_fckm)
+	plt.show()
+    
+	data2= np.array(heart)
+	# 调用模糊C均值函数
+	res2_U = fuzzy(data2 , 2 , 2)
+	y2_fckm=np.zeros(3000)
+	for i in range(0,3000):
+		y2_fckm[i]=np.argmax(res2_U[i])
+	# 计算准确率
+	plt.scatter(heart['x'], heart['y'], c=y2_fckm)
+	plt.show()
+
+#心型数据
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[16]:
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+import random
+
+def random_list(start,stop,length):
+    random_list = []
+    for i in range(length):
+        random_list.append(random.uniform(start, stop))
+    return random_list
+n=500
+x1=np.array(random_list(-6,6,n))
+x2=np.array(random_list(-12,12,2*n))
+
+
+# In[17]:
+
+
+h1=np.array(random_list(0,2.5,n))
+h2=np.array(random_list(0,2.5,2*n))
+y1 = random.uniform(0.618*np.abs(x1) - 0.8* np.sqrt(36-x1**2),0.618*np.abs(x1) - 0.8* np.sqrt(36-x1**2)+h1)
+y2 = random.uniform(0.618*np.abs(x1) + 0.8* np.sqrt(36-x1**2)-h1,0.618*np.abs(x1) + 0.8* np.sqrt(36-x1**2))
+y3 = random.uniform(0.618*np.abs(x2) - 0.8* np.sqrt(144-x2**2)-h2,0.618*np.abs(x2) - 0.8* np.sqrt(144-x2**2)+h2)
+y4 = random.uniform(0.618*np.abs(x2) + 0.8* np.sqrt(144-x2**2)-h2,0.618*np.abs(x2) + 0.8* np.sqrt(144-x2**2))
+plt.scatter(x1, y1, color = 'r')
+plt.scatter(x1, y2, color = 'r')
+plt.scatter(x2, y3, color = 'b')
+plt.scatter(x2, y4, color = 'b')
+plt.show()
+
+
+# In[18]:
+
+
+x=np.hstack((x1,x1,x2,x2)).T
+y=np.hstack((y1,y2,y3,y4)).T
+X=np.vstack((x,y)).T
+np.shape(X)
+
+import pandas as pd
+column_x = pd.Series(x, name='x')
+column_y = pd.Series(y, name='y')
+heart=pd.DataFrame({'x':x,'y':y})
+heart.to_csv("heart.csv", index=False, sep=' ')
+
+#高斯数据
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[2]:
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import datasets
+import pandas as pd
+#matplotlib inline
+X1, y1=datasets.make_circles(n_samples=1250, factor=.65,noise=.05)
+X2, y2 = datasets.make_blobs(n_samples=250, n_features=2, centers=[[1.2,-1.2]], cluster_std=[[.1]],random_state=9)
+X = np.concatenate((X1, X2))
+convex_x=X[:,0]
+convex_y=X[:,1]
+column_x = pd.Series(convex_x, name='x')
+column_y = pd.Series(convex_y, name='y')
+convex=pd.DataFrame({'x':convex_x,'y':convex_y})
+convex.to_csv("convex.csv", index=False, sep=' ')
+
+plt.scatter(X[:, 0], X[:, 1], marker='o')
+plt.show()
+
+
+# In[3]:
+
+
+from sklearn.cluster import DBSCAN
+y_pred = DBSCAN().fit_predict(X)
+plt.scatter(X[:, 0], X[:, 1], c=y_pred)
+plt.show()
+
+
+# In[4]:
+
+
+y_pred = DBSCAN(eps = 0.12, min_samples = 10).fit_predict(X)
+plt.scatter(X[:, 0], X[:, 1], c=y_pred)
+plt.show()
+
+
+# In[5]:
+
+
+gauss=pd.read_csv("gaussdata.csv")
+plt.scatter(gauss['x'], gauss['y'], c=gauss['z'])
+plt.show()
+
+
+# In[22]:
+
+
+gauss_y = DBSCAN(eps = 0.33, min_samples = 10).fit_predict(gauss)
+plt.scatter(gauss['x'], gauss['y'], c=gauss_y)
+plt.show()
